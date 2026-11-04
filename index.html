@@ -503,7 +503,7 @@ return (cart.length?`<div class="tbl"><table><tr><th>Товар<th>Кол.<th>Ц
 V.pos=()=>`<h1>Касса</h1><div class="two"><section><h2>Товары</h2><div class="row" style="margin-top:0"><label class="btn" style="margin:0;cursor:pointer">Сканировать список или чек<input id="sfp" type="file" accept="image/*" hidden></label></div>${srch()}<div id="pl">${plist()}</div></section><section><h2>Чек</h2><div id="cart">${cartH()}</div></section></div>`;
 
 const itemsT0=()=>`<div class="tbl"><table><tr><th>Артикул<th>Название<th class="r">Закуп<th class="r">Продажа<th class="r">Остаток<th></tr>${db.items.filter(match).map(i=>`<tr><td>${esc(i.sku)}<td>${esc(i.name)}<td class="r">${f(i.buy)}<td class="r">${f(i.sell)}<td class="r">${i.qty}<td class="r"><button class="btn g" data-a="itemForm" data-v="${i.id}">Изменить</button> <button class="x" data-a="delItem" data-v="${i.id}" aria-label="Удалить">×</button></tr>`).join('')}</table></div>`;
-V.items=()=>`<h1>Товары</h1><section><div class="row">${srch()}<button class="btn" data-a="itemForm">Добавить товар</button></div><div id="tb">${itemsT()}</div></section>`;
+V.items=()=>`<h1>Товары</h1><section><div class="row">${srch()}<button class="btn" data-a="addChoice">Добавить товар</button></div><div id="tb">${itemsT()}</div></section>`;
 
 V.in=()=>{const tot=rin.lines.reduce((s,l)=>s+l.qty*l.buy,0);
 return `<h1>Приход товара</h1><section><label>Поставщик<input data-c="sup" value="${esc(rin.sup)}" placeholder="Название поставщика"></label>
@@ -739,7 +739,7 @@ V.pos=()=>`<label class="cd sc"><span class="sci">${I2('scan')}</span><span clas
 const itemsT=()=>`<div class="th r4"><span>Артикул</span><span>Название</span><span>Цена</span><span class="c">Остаток</span><span class="r">Действие</span></div>`+db.items.filter(i=>match(i)&&(!fc||i.cat===fc)&&whPass(i)).map(i=>`<div class="tr r4"><span class="sk">${esc(i.sku)}</span><b>${esc(i.name)}${itemSub(i)}</b><span class="rp">${mr(i.sell)}<small class="bl">закуп ${mr(i.buy)}</small></span><span class="c"><i class="st ${qShow(i)<=lowOf(i)?'lo':''}">${qShow(i)}</i></span><span class="acn"><button class="ed" data-a="itemForm" data-v="${i.id}" aria-label="Изменить">${I2('pencil')}</button>${I2('chev','chv')}</span></div>`).join('');
 const seg=a=>`<div class="sg">${[['list','Товары','box'],['cat','Категории','list'],['wh','Склады','warehouse'],['stk','Остатки','grid']].map(t=>`<button class="${t[0]===a?'on':''}" data-a="isub" data-v="${t[0]}">${I2(t[2])}${t[1]}</button>`).join('')}</div>`;
 const catV=()=>{const m={};db.items.forEach(i=>{const k=i.cat||'Без категории';(m[k]=m[k]||{n:0,q:0});m[k].n++;m[k].q+=i.qty});return `<section class="cd">${Object.entries(m).map(([k,v])=>`<button class="li" data-a="catGo" data-v="${esc(k)}"><span><b>${esc(k)}</b><br><small class="mu">${v.n} поз., ${v.q} шт.</small></span>${I2('chev')}</button>`).join('')}</section><p class="hint">Категорию задаёт поле «Категория» в карточке товара.</p>`};
-V.items=()=>seg(isub)+(isub==='cat'?catV():`<div class="sr"><div class="sb">${I2('search')}<input id="q" placeholder="Поиск по товарам…" value="${esc(q)}"></div><div class="fb sel"><select data-c="fc"><option value="">Фильтр</option>${cats().map(c=>`<option${c===fc?' selected':''}>${esc(c)}</option>`).join('')}</select>${I2('chev','dn')}</div></div><section class="cd" id="tb">${itemsT()}</section><section class="cd sm"><div>${I2('warehouse','bg3')}<div><small>Всего товаров</small><b>${db.items.length}</b></div></div><i></i><div>${I2('box','bg3')}<div><small>Общий остаток</small><b>${db.items.reduce((s,i)=>s+i.qty,0)} шт.</b></div></div></section><button class="bt rd big2" data-a="itemForm">${I2('plus')}Добавить товар</button>`);
+V.items=()=>seg(isub)+(isub==='cat'?catV():`<div class="sr"><div class="sb">${I2('search')}<input id="q" placeholder="Поиск по товарам…" value="${esc(q)}"></div><div class="fb sel"><select data-c="fc"><option value="">Фильтр</option>${cats().map(c=>`<option${c===fc?' selected':''}>${esc(c)}</option>`).join('')}</select>${I2('chev','dn')}</div></div><section class="cd" id="tb">${itemsT()}</section><section class="cd sm"><div>${I2('warehouse','bg3')}<div><small>Всего товаров</small><b>${db.items.length}</b></div></div><i></i><div>${I2('box','bg3')}<div><small>Общий остаток</small><b>${db.items.reduce((s,i)=>s+i.qty,0)} шт.</b></div></div></section><button class="bt rd big2" data-a="addChoice">${I2('plus')}Добавить товар</button>`);
 /* in */
 V.in=()=>{const it=I(inSel)||db.items[0],tot=rin.lines.reduce((s,l)=>s+l.qty*l.buy,0);
 return `<section class="cd"><div class="fl">${I2('user')}Поставщик</div><input class="inp" data-c="sup" placeholder="Название поставщика" value="${esc(rin.sup)}"><div class="fl">${I2('cal')}Дата поступления</div><input class="inp" type="date" data-c="idt" value="${rin.date||today()}"><div class="fl">${I2('box')}Выберите товар</div><div class="sel"><select data-c="insel">${db.items.map(i=>`<option value="${i.id}"${it&&i.id===it.id?' selected':''}>${esc(i.sku)} · ${esc(i.name)}`).join('')}</select>${I2('chev','dn')}</div><div class="g2"><div><div class="fl">${I2('boxes')}Количество</div><input class="inp" id="in_q" type="number" min="0" step="any" value="1"></div><div><div class="fl">${I2('ruble')}Цена закупки</div><input class="inp" id="in_p" type="number" min="0" step="any" value="${it?it.buy:0}"></div></div><div class="fl">${I2('tag')}Цена продажи</div><input class="inp" id="in_s" type="number" min="0" step="any" value="${it?it.sell:0}"><button class="bt rd gold sp w100" data-a="addIn2">${I2('plus')}Добавить в накладную</button></section>
@@ -1591,6 +1591,57 @@ document.addEventListener('keydown',e=>{
  if(!mod&&!e.altKey&&!ed&&!open){
   if(e.key.length===1){const t=Date.now();if(t-_kt>80)_kb='';_kt=t;_kb+=e.key;return}
   if(e.key==='Enter'&&_kb.length>=4&&Date.now()-_kt<150){const c=_kb;_kb='';if(['pos','in'].includes(tab)){e.preventDefault();if(!scanCode(c))toast('Товар с кодом '+c+' не найден')}}}});
+
+/* ===== ДОБАВЛЕНИЕ ТОВАРА: «Вручную» или «По фото» (с линией и рядом сразу) ===== */
+let ap=null,lastLR=null;
+const apPrompt='Это фото товара, товарной накладной, списка, ценника или этикетки (печатных или рукописных, на любом языке). Определи товары. Верни ТОЛЬКО JSON без пояснений: {"items":[{"sku":"артикул или пустая строка","name":"название товара","qty":число,"price":число}]}. qty это количество (если не указано, поставь 1), price это цена за единицу (если нет, поставь 0). Если на фото сам товар без текста, назови его коротко. Не выдумывай артикулы, нечитаемое пропусти.';
+const apMk=()=>(typeof sc!=='undefined'&&+sc.mk>0)?+sc.mk:30;
+
+function apRender(){
+ if(!ap)return;
+ if(ap.busy){modal(`<h2>Читаю фото…</h2><p class="hint">Это займёт несколько секунд.</p>`);return}
+ const L=ap.items;
+ modal(`<h2>Товары с фото</h2><p class="hint">Проверьте список. Линию и ряд можно задать сразу для всех товаров или отдельно для каждого.</p>
+ <div class="g2"><div><div class="fl">Линия (для всех)</div><input class="inp" data-c="apcommon" data-v="line" value="${esc(ap.line)}" placeholder="например 2"></div><div><div class="fl">Ряд (для всех)</div><input class="inp" data-c="apcommon" data-v="row" value="${esc(ap.row)}" placeholder="например 5"></div></div>
+ ${L.map((r,n)=>`<div class="cd" style="padding:10px 12px;margin:8px 0"><div class="g2"><div><div class="fl">Артикул</div><input class="inp" data-c="apf" data-v="${n}:sku" value="${esc(r.sku)}" placeholder="если нет — создам сам"></div><div><div class="fl">Название</div><input class="inp" data-c="apf" data-v="${n}:name" value="${esc(r.name)}"></div></div>
+ <div class="g2"><div><div class="fl">Количество</div><input class="inp" type="number" min="0" step="any" data-c="apf" data-v="${n}:qty" value="${r.qty}"></div><div><div class="fl">Закуп</div><input class="inp" type="number" min="0" step="any" data-c="apf" data-v="${n}:buy" value="${r.buy}"></div></div>
+ <div class="g2"><div><div class="fl">Продажа</div><input class="inp" type="number" min="0" step="any" data-c="apf" data-v="${n}:sell" value="${r.sell}"></div><div><div class="fl">Линия / Ряд (если иначе)</div><div class="g2"><input class="inp" data-c="apf" data-v="${n}:line" value="${esc(r.line)}" placeholder="${esc(ap.line||'линия')}"><input class="inp" data-c="apf" data-v="${n}:row" value="${esc(r.row)}" placeholder="${esc(ap.row||'ряд')}"></div></div></div>
+ <button class="btn g" style="color:#d10f1a" data-a="apDel" data-v="${n}">Убрать</button></div>`).join('')}
+ <div class="row"><button class="btn" data-a="apAdd">Добавить на склад (${L.length})</button><button class="btn g" data-a="x">Отмена</button></div>`)}
+
+async function apStart(fl){
+ let failed=false;ap={items:[],line:lastLR?lastLR.line:'',row:lastLR?lastLR.row:'',busy:true};apRender();
+ try{
+  const eng=(typeof sc!=='undefined'&&sc.s)?sc.s:aiScanner;
+  const r=await eng.json(apPrompt,{images:fl,modelTier:'default',cache:false}),mk=apMk();
+  ap.items=(Array.isArray(r&&r.items)?r.items:[]).map(x=>{const buy=+x.price||0;return{sku:String(x.sku||'').trim(),name:String(x.name||'').trim(),qty:+x.qty>0?+x.qty:1,buy,sell:buy?+(buy*(1+mk/100)).toFixed(2):0,line:'',row:''}}).filter(x=>x.name||x.sku);
+ }catch(e){failed=true;toast((e&&e.msg)||'Не удалось распознать фото. Попробуйте ещё раз или добавьте вручную')}
+ ap.busy=false;
+ if(!ap.items.length){A.x();if(!failed)toast('Товары на фото не найдены. Попробуйте более чёткое фото или добавьте вручную');ap=null;return}
+ apRender()}
+
+document.addEventListener('change',e=>{if(!e.target||e.target.id!=='apf')return;const fl=e.target.files&&e.target.files[0];e.target.value='';if(fl)apStart(fl)});
+
+const apSync=()=>document.querySelectorAll('#m [data-c="apf"],#m [data-c="apcommon"]').forEach(el=>C[el.dataset.c](el.dataset.v,el.value));
+Object.assign(C,{
+ apf(v,x){const[n,k]=String(v).split(':'),r=ap&&ap.items[+n];if(!r)return;r[k]=['qty','buy','sell'].includes(k)?(+x||0):x},
+ apcommon(v,x){if(ap)ap[v]=x}});
+Object.assign(A,{
+ addChoice(){modal(`<h2>Добавить товар</h2><div class="row" style="flex-direction:column;gap:10px"><button class="btn big2" data-a="addManual">✍️ Вручную</button><label class="btn big2" style="margin:0;cursor:pointer;text-align:center">📷 По фото<input id="apf" type="file" accept="image/*" hidden></label></div><p class="hint">По фото можно добавить товары с накладной, списка, ценника или этикетки. Линию и ряд зададите перед добавлением.</p><div class="row"><button class="btn g" data-a="x">Отмена</button></div>`)},
+ addManual(){A.x();A.itemForm()},
+ apDel(v){if(!ap)return;apSync();ap.items.splice(+v,1);if(!ap.items.length){A.x();ap=null;return}apRender()},
+ apAdd(){if(!ap)return;apSync();let added=0,merged=0;const wh=whDef();
+  ap.items.forEach((r,n)=>{if(!r.sku&&!r.name)return;
+   const sku=r.sku||('F'+String(Date.now()).slice(-6)+n),line=(r.line||ap.line||'').trim(),row=(r.row||ap.row||'').trim(),qty=+r.qty||0;
+   const ex=db.items.find(i=>nrm(i.sku)===nrm(sku)&&nrm(i.line)===nrm(line)&&nrm(i.row)===nrm(row));
+   if(ex){ex.qty=(+ex.qty||0)+qty;if(wh&&qty>0){const w={...wqOf(ex)};w[wh]=(+w[wh]||0)+qty;ex.wq=w}if(r.buy)ex.buy=r.buy;if(r.sell)ex.sell=r.sell;merged++}
+   else{const it={id:newId(),sku,name:r.name||sku,cat:'',wh,line,row,buy:+r.buy||0,sell:+r.sell||0,qty,pack:0,pallet:0,bc:'',min:0};if(wh&&qty>0)it.wq={[wh]:qty};db.items.push(it);added++}});
+  if(ap.line||ap.row)lastLR={line:ap.line||'',row:ap.row||''};
+  ap=null;save();A.x();render();toast('Добавлено: '+added+(merged?', пополнено существующих: '+merged:''))}});
+
+/* линия и ряд запоминаются: следующий новый товар сразу получает те же */
+{const f0=A.itemForm;A.itemForm=function(v){const r=f0.apply(this,arguments);if(!v&&lastLR){const l=$('#f_line'),w=$('#f_row');if(l&&!l.value)l.value=lastLR.line;if(w&&!w.value)w.value=lastLR.row}return r}}
+{const s0=A.saveItem;A.saveItem=function(v){const l=$('#f_line'),w=$('#f_row'),ln=l?l.value.trim():'',rw=w?w.value.trim():'';const n0=db.items.length,r=s0.apply(this,arguments);if(!v&&db.items.length>n0&&(ln||rw))lastLR={line:ln,row:rw};return r}}
 
 /* ===== ДЕСКТОП: офлайн-режим =====
    Вставляется в основной скрипт приложения прямо перед boot().
