@@ -536,7 +536,7 @@ function render(){$('#nav').innerHTML='<div class="nl" role="img" aria-label="М
 const exb=w=>`<span class="np" style="display:contents"><button class="btn g" data-a="ex" data-v="${w}:pdf">PDF</button><button class="btn g" data-a="ex" data-v="${w}:xlsx">Excel</button></span>`;
 function getD(w){const[k,id]=w.split(':'),sm=(L,fn)=>L.reduce((s,i)=>s+fn(i),0);
  if(k==='rep')return repD();if(k==='price')return{t:'Прайс-лист',m:'Цены на '+now(),h:['Артикул','Название','Цена'],r:db.items.filter(match).map(i=>[i.sku,i.name,i.sell]),n:[2]};
- if(k==='stock'){const L=db.items.filter(i=>match(i)&&whPass(i)),W=whList().length>0&&fwh==='*';return{t:'Остатки на складе'+(fwh==='*'?'':' — '+whName(fwh)),m:now(),h:['Артикул','Товар','Остаток',...(W?['По складам']:[]),'Закуп','Продажа','Сумма закуп','Сумма продажа'],r:[...L.map(i=>{const q=qShow(i);return[i.sku,i.name,q,...(W?[whTxt(i)]:[]),i.buy,i.sell,q*i.buy,q*i.sell]}),['','Итого','',...(W?['']:[]),'','',sm(L,i=>qShow(i)*i.buy),sm(L,i=>qShow(i)*i.sell)]],n:W?[2,4,5,6,7]:[2,3,4,5,6]}}
+ if(k==='stock'){const L=db.items.filter(i=>match(i)&&whPass(i)).sort(lrSort),W=whList().length>0&&fwh==='*';return{t:'Остатки на складе'+(fwh==='*'?'':' — '+whName(fwh)),m:now(),h:['Артикул','Товар','Остаток',...(W?['По складам']:[]),'Закуп','Продажа','Сумма закуп','Сумма продажа'],r:[...L.map(i=>{const q=qShow(i);return[i.sku,i.name,q,...(W?[whTxt(i)]:[]),i.buy,i.sell,q*i.buy,q*i.sell]}),['','Итого','',...(W?['']:[]),'','',sm(L,i=>qShow(i)*i.buy),sm(L,i=>qShow(i)*i.sell)]],n:W?[2,4,5,6,7]:[2,3,4,5,6]}}
  if(k==='cust')return{t:'Клиенты и долги',m:now(),h:['ФИО','Телефон','Регион','Магазин','Долг'],r:db.customers.map(c=>[c.name,fullPhone(c)?'+'+fullPhone(c):'',REG[c.region]?.n||'',c.shop||'',c.debt]),n:[4]};
  if(k==='docs')return{t:'Журнал документов',m:now(),h:['№','Тип','Дата','Контрагент','Сумма','Оплачено','Долг'],r:db.docs.filter(d=>df==='all'||d.type===df).slice().reverse().map(d=>[d.no,TY[d.type],d.date,d.party,d.total,d.paid,d.debt]),n:[4,5,6]};
  const d=db.docs.find(x=>x.id==id);if(!d)return null;const t=TY[d.type]+' '+d.no,m=d.date+', '+d.party+(d.whn?', склад: '+d.whn:'');
@@ -736,7 +736,7 @@ V.pos=()=>`<label class="cd sc"><span class="sci">${I2('scan')}</span><span clas
 <div class="pos2"><div><div class="sh"><span>Товары</span><button class="sbt" data-a="srch" aria-label="Поиск">${I2('search')}</button></div>${qs||q?`<div class="sb wide"><svg class="ic2" viewBox="0 0 24 24">${IC2.search}</svg><input id="q" placeholder="Название или артикул" value="${esc(q)}"></div>`:''}<div id="tb" class="pl2">${plist()}</div></div>
 <section class="cd"><h2 class="ch">${I2('list','rc')}Чек</h2><div id="cart">${cartH()}</div></section></div>`;
 /* items */
-const itemsT=()=>`<div class="th r4"><span>Артикул</span><span>Название</span><span>Цена</span><span class="c">Остаток</span><span class="r">Действие</span></div>`+db.items.filter(i=>match(i)&&(!fc||i.cat===fc)&&whPass(i)).map(i=>`<div class="tr r4"><span class="sk">${esc(i.sku)}</span><b>${esc(i.name)}${itemSub(i)}</b><span class="rp">${mr(i.sell)}<small class="bl">закуп ${mr(i.buy)}</small></span><span class="c"><i class="st ${qShow(i)<=lowOf(i)?'lo':''}">${qShow(i)}</i></span><span class="acn"><button class="ed" data-a="itemForm" data-v="${i.id}" aria-label="Изменить">${I2('pencil')}</button>${I2('chev','chv')}</span></div>`).join('');
+const itemsT=()=>`<div class="th r4"><span>Артикул</span><span>Название</span><span>Цена</span><span class="c">Остаток</span><span class="r">Действие</span></div>`+db.items.filter(i=>match(i)&&(!fc||i.cat===fc)&&whPass(i)).sort(lrSort).map(i=>`<div class="tr r4"><span class="sk">${esc(i.sku)}</span><b>${esc(i.name)}${itemSub(i)}</b><span class="rp">${mr(i.sell)}<small class="bl">закуп ${mr(i.buy)}</small></span><span class="c"><i class="st ${qShow(i)<=lowOf(i)?'lo':''}">${qShow(i)}</i></span><span class="acn"><button class="ed" data-a="itemForm" data-v="${i.id}" aria-label="Изменить">${I2('pencil')}</button>${I2('chev','chv')}</span></div>`).join('');
 const seg=a=>`<div class="sg">${[['list','Товары','box'],['cat','Категории','list'],['wh','Склады','warehouse'],['stk','Остатки','grid']].map(t=>`<button class="${t[0]===a?'on':''}" data-a="isub" data-v="${t[0]}">${I2(t[2])}${t[1]}</button>`).join('')}</div>`;
 const catV=()=>{const m={};db.items.forEach(i=>{const k=i.cat||'Без категории';(m[k]=m[k]||{n:0,q:0});m[k].n++;m[k].q+=i.qty});return `<section class="cd">${Object.entries(m).map(([k,v])=>`<button class="li" data-a="catGo" data-v="${esc(k)}"><span><b>${esc(k)}</b><br><small class="mu">${v.n} поз., ${v.q} шт.</small></span>${I2('chev')}</button>`).join('')}</section><p class="hint">Категорию задаёт поле «Категория» в карточке товара.</p>`};
 V.items=()=>seg(isub)+(isub==='cat'?catV():`<div class="sr"><div class="sb">${I2('search')}<input id="q" placeholder="Поиск по товарам…" value="${esc(q)}"></div><div class="fb sel"><select data-c="fc"><option value="">Фильтр</option>${cats().map(c=>`<option${c===fc?' selected':''}>${esc(c)}</option>`).join('')}</select>${I2('chev','dn')}</div></div><section class="cd" id="tb">${itemsT()}</section><section class="cd sm"><div>${I2('warehouse','bg3')}<div><small>Всего товаров</small><b>${db.items.length}</b></div></div><i></i><div>${I2('box','bg3')}<div><small>Общий остаток</small><b>${db.items.reduce((s,i)=>s+i.qty,0)} шт.</b></div></div></section><button class="bt rd big2" data-a="addChoice">${I2('plus')}Добавить товар</button>`);
@@ -748,7 +748,7 @@ return `<section class="cd"><div class="fl">${I2('user')}Поставщик</div
 /* scan */
 V.scan=()=>`<section class="cd">`+(sc.ok===false?'<p class="tx">Сканер работает в версии, открытой по ссылке через Claude. В скачанном отдельном файле он недоступен.</p>':`<p class="tx">Сфотографируйте накладную, печатную или рукописную. Программа прочитает товары, вы проверите список и добавите его на склад.</p>${scHint()}<div class="sel"><select data-c="scmode"><option value="in">Приход: фото накладной<option value="sale"${sc.mode==='sale'?' selected':''}>Продажа: фото списка или чека</select>${I2('chev','dn')}</div><label class="bt gr sp" style="cursor:pointer">${I2('camera')}Снять или выбрать фото<input id="sf" type="file" accept="image/*" hidden></label>${sc.file?`<button class="bt rd sp w100" data-a="scGo" ${sc.busy?'disabled':''}>${sc.busy?'Читаю документ…':'Распознать'}</button>`:''}${sc.url?`<img class="pv" src="${sc.url}" alt="Документ">`:''}`)+`</section>`+(sc.items?scTable():'');
 /* stock */
-const stockT=()=>`<div class="th r5"><span>Артикул</span><span>Товар</span><span class="c">Остаток</span><span class="c">Закуп</span><span class="c">Продажа</span></div>`+db.items.filter(i=>match(i)&&whPass(i)).map(i=>`<div class="tr r5"><span><i class="bd">${esc(i.sku)}</i></span><span class="pn2">${TH[i.sku]?`<img class="th2" src="${TH[i.sku]}" alt="">`:I2('box','th3')}<b>${esc(i.name)}</b>${itemSub0(i)}${skuTotH(i)}</span><span class="c ${qShow(i)<=lowOf(i)?'lo2':''}">${qShow(i)}${fwh==='*'?whBreakH(i):''}${qShow(i)<=lowOf(i)?'<br><small>мало</small>':''}</span><span class="c">${mr(i.buy)}</span><span class="c">${mr(i.sell)}</span></div>`).join('');
+const stockT=()=>`<div class="th r5"><span>Артикул</span><span>Товар</span><span class="c">Остаток</span><span class="c">Закуп</span><span class="c">Продажа</span></div>`+db.items.filter(i=>match(i)&&whPass(i)).sort(lrSort).map(i=>`<div class="tr r5"><span><i class="bd">${esc(i.sku)}</i></span><span class="pn2">${TH[i.sku]?`<img class="th2" src="${TH[i.sku]}" alt="">`:I2('box','th3')}<b>${esc(i.name)}</b>${itemSub0(i)}${skuTotH(i)}</span><span class="c ${qShow(i)<=lowOf(i)?'lo2':''}">${qShow(i)}${fwh==='*'?whBreakH(i):''}${qShow(i)<=lowOf(i)?'<br><small>мало</small>':''}</span><span class="c">${mr(i.buy)}</span><span class="c">${mr(i.sell)}</span></div>`).join('');
 V.stock=()=>{const L=db.items.filter(whPass),b=L.reduce((s,i)=>s+qShow(i)*i.buy,0),v=L.reduce((s,i)=>s+qShow(i)*i.sell,0);
 return `<section class="cd" id="prt"><div class="tb2 np"><div class="sb">${I2('search')}<input id="q" placeholder="Поиск" value="${esc(q)}"></div><button class="bt rd" data-a="ex" data-v="stock:pdf">${I2('pdf')}PDF</button><button class="bt pl" data-a="ex" data-v="stock:xlsx">${XLI}Excel</button></div><div class="stt"><div class="sk2 g">${I2('box','bg3')}<div><small>Позиций</small><b>${L.length}</b></div></div><div class="sk2">${I2('coins','bg3 gl')}<div><small>Стоимость по закупу</small><b>${mr(b)}</b></div></div><div class="sk2">${I2('cart','bg3 nv')}<div><small>Стоимость по продаже</small><b>${mr(v)}</b></div></div><div class="sk2">${I2('star','bg3 gl')}<div><small>Ожидаемая наценка</small><b>${mr(v-b)}</b></div></div></div></section><section class="cd"><div id="tb">${stockT()}</div></section>`};
 /* clients */
@@ -929,7 +929,7 @@ function mList(B,L,R,nums){B=B||[];L=L||[];R=R||[];const mp=a=>new Map(a.map(x=>
    if(nums.includes(k)&&typeof lv==='number'&&typeof bv==='number'&&typeof rv==='number')m[k]=+(rv+(lv-bv)).toFixed(4);else m[k]=jEq(lv,bv)?rv:lv;if(m[k]===undefined)delete m[k]}
   out.push(m)}
  return out}
-function mergeDb(b,l,r){const o={...r};o.items=mList(b.items,l.items,r.items,['qty']);o.customers=mList(b.customers,l.customers,r.customers,['debt']);o.docs=mList(b.docs,l.docs,r.docs,[]).sort((x,y)=>x.id-y.id);o.whs=mList(b.whs||[],l.whs||[],r.whs||[],[]);o.moves=mList(b.moves||[],l.moves||[],r.moves||[],[]);o.trash=mList(b.trash||[],l.trash||[],r.trash||[],[]);if(l.whMain)o.whMain=l.whMain;
+function mergeDb(b,l,r){const o={...r};o.items=mList(b.items,l.items,r.items,['qty']);o.customers=mList(b.customers,l.customers,r.customers,['debt']);o.docs=mList(b.docs,l.docs,r.docs,[]).sort((x,y)=>x.id-y.id);o.whs=mList(b.whs||[],l.whs||[],r.whs||[],[]);o.moves=mList(b.moves||[],l.moves||[],r.moves||[],[]);o.trash=mList(b.trash||[],l.trash||[],r.trash||[],[]);if(l.whMain)o.whMain=l.whMain;o.orders=mList(b.orders||[],l.orders||[],r.orders||[],[]);if(l.shopInfo)o.shopInfo=l.shopInfo;
  o.seq={};for(const k of new Set([...Object.keys(b.seq||{}),...Object.keys(l.seq||{}),...Object.keys(r.seq||{})]))o.seq[k]=Math.max(+(l.seq||{})[k]||0,+(r.seq||{})[k]||0);o.nid=Math.max(l.nid||0,r.nid||0);return o}
 function safeRender(){const ae=document.activeElement,busy=($('#m')&&$('#m').innerHTML)||(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName));if(busy){pendRender=true;return}pendRender=false;cart=cart.filter(c=>I(c.id));try{render()}catch(e){}}
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -1032,10 +1032,13 @@ async function SRV(kv,ctx,rq){
    else{sh.members=sh.members.filter(x=>x.id!==me.id);await kv.put('sh:'+sh.id,sh)}
    await kv.del('u:'+me.id);return{ok:1}}}
  if(p==='/ai'){const c=await kv.get('cfg:ai');return{ai:c&&c.key?{key:c.key,model:c.model||''}:null}}
+  if(p==='/tg'){const c=await kv.get('cfg:tg');return{tg:c&&c.token&&c.chatId?{token:c.token,chatId:c.chatId}:null}}
   if(!me.admin)bad('forbidden');
  const grant=async(u,plan)=>{const m=PLANS[plan].months,base=Math.max(now,(u.sub&&u.sub.until)||0);u.sub={plan,until:addM(base,m)};await kv.put('u:'+u.id,u)};
  if(p==='/a/aiget'){const c=await kv.get('cfg:ai');return{ai:{hasKey:!!(c&&c.key),mask:c&&c.key?c.key.slice(0,7)+'…'+c.key.slice(-4):'',model:(c&&c.model)||''}}}
   if(p==='/a/aiset'){if(b.del){await kv.del('cfg:ai');return{ok:1}}const c=(await kv.get('cfg:ai'))||{};const k=String(b.key||'').trim();if(k){if(!/^sk-[\w\-]{10,200}$/.test(k))bad('none');c.key=k}if(!c.key)bad('none');c.model=String(b.model||'').trim().slice(0,100);await kv.put('cfg:ai',c);return{ok:1}}
+  if(p==='/a/tgget'){const c=await kv.get('cfg:tg');return{tg:{hasToken:!!(c&&c.token),mask:c&&c.token?c.token.slice(0,6)+'…'+c.token.slice(-4):'',chatId:(c&&c.chatId)||''}}}
+  if(p==='/a/tgset'){if(b.del){await kv.del('cfg:tg');return{ok:1}}const c=(await kv.get('cfg:tg'))||{};const tk=String(b.token||'').trim();if(tk){if(!/^\d{6,12}:[\w-]{30,45}$/.test(tk))bad('none');c.token=tk}const ci=String(b.chatId||'').trim();if(ci)c.chatId=ci;if(!c.token||!c.chatId)bad('none');await kv.put('cfg:tg',c);return{ok:1}}
   if(p==='/a/users'){const ks=await kv.list('u:'),out=[];for(const k of ks){const u=await kv.get(k);if(u&&!u.admin)out.push(pubU(u))}out.sort((a,c)=>c.regAt-a.regAt);return{users:out,now}}
  if(p==='/a/user'){const u=await kv.get('u:'+String(b.id));if(!u)bad('none');const s=await kv.get('s:'+u.id);return{user:pubU(u),snap:s,now}}
  if(p==='/a/grant'){const u=await kv.get('u:'+String(b.id));if(!u||!PLANS[b.plan])bad('none');await grant(u,b.plan);return{user:pubU(u)}}
@@ -1139,7 +1142,7 @@ let admTab='users',admSel=null,admData=null,admQ='';
 const online=u=>Date.now()-(u.lastSeen||0)<9e4;
 const subL=u=>u.blocked?'Заблокирован':u.sub&&u.sub.until>Date.now()?((u.sub.plan==='trial'?'Пробный период':'Подписка')+' до '+fmtT(u.sub.until).split(',')[0]):'Нет подписки';
 function enterAdmin(){clrT();document.body.classList.add('app');if(!appOn){appOn=true;splash(ses.user.name||'Администратор').finish()}curScr=null;acc={...ses.user,admin:true,key:'shop_admin'};$('#auth').style.display='none';admTab='users';admSel=null;admData=null;render();admLoad()}
-async function admLoad(){try{if(admTab==='users')admData=(await API('/a/users')).users;else if(admTab==='pays')admData=(await API('/a/pays')).pays;else if(admTab==='me')admAi=(await API('/a/aiget')).ai||{}}catch(e){if(e&&e.err==='auth')return doLogout();toast(errMsg(e))}admRender()}
+async function admLoad(){try{if(admTab==='users')admData=(await API('/a/users')).users;else if(admTab==='pays')admData=(await API('/a/pays')).pays;else if(admTab==='me'){admAi=(await API('/a/aiget')).ai||{};admTg=(await API('/a/tgget')).tg||{}}}catch(e){if(e&&e.err==='auth')return doLogout();toast(errMsg(e))}admRender()}
 const admUL=()=>{const L=(admData||[]).filter(u=>!admQ||(u.name+' '+u.phone).toLowerCase().includes(admQ.toLowerCase()));return L.map(u=>`<button class="cd uc" data-a="admOpen" data-v="${esc(u.id)}"><div class="uh"><b>${esc(u.name||'Без имени')}</b><i class="dot ${online(u)?'on':''}"></i></div><small>+${esc(u.phone)}, ${REGN[u.region]||''}</small><small>${online(u)?'В сети сейчас':'Был(а) в сети: '+fmtT(u.lastSeen)}</small><small>${subL(u)}</small></button>`).join('')||'<p class="hint">Пользователей пока нет.</p>'};
 function admBody(){
  if(admTab==='users'){
@@ -1149,7 +1152,7 @@ function admBody(){
 <section class="cd"><h2 class="ch">Активность и склад</h2><div class="kv"><span>Товаров</span><b>${st.items??'—'}</b><span>Клиентов</span><b>${st.customers??'—'}</b><span>Продаж</span><b>${st.sales??'—'}</b><span>Выручка</span><b>${st.revenue!=null?money(st.revenue)+' ₽':'—'}</b><span>Долги клиентов</span><b>${st.debt!=null?money(st.debt)+' ₽':'—'}</b><span>Последняя продажа</span><b>${st.lastSale?fmtT(st.lastSale):'—'}</b><span>Данные обновлены</span><b>${sn?fmtT(sn.at):'—'}</b></div>${d&&d.items?`<div class="tbl" style="margin-top:10px"><table><tr><th>Артикул<th>Товар<th class="r">Остаток<th class="r">Закуп<th class="r">Продажа</tr>${d.items.map(i=>`<tr><td>${esc(i.sku)}<td>${esc(i.name)}<td class="r">${i.qty}<td class="r">${f(i.buy)}<td class="r">${f(i.sell)}</tr>`).join('')}</table></div>`:'<p class="hint">Данных склада пока нет.</p>'}</section>`}
   return `<div class="sb wide"><svg class="ic2" viewBox="0 0 24 24">${IC2.search}</svg><input id="aq" placeholder="Поиск по имени или номеру" value="${esc(admQ)}"></div><div id="aul" class="pl2">${admUL()}</div>`}
  if(admTab==='pays')return (admData||[]).map(x=>`<section class="cd"><div class="uh"><b>${esc(x.uname||'—')}</b><span class="stl ${x.status}">${{pending:'Ожидает',approved:'Подтверждён',rejected:'Отклонён'}[x.status]}</span></div><small>+${esc(x.uphone)} · ${PLN[x.plan]} · ${money(x.amount)} ₽</small><small>${fmtT(x.created)}</small><div class="row"><button class="btn g" data-a="admFile" data-v="${x.id}">Открыть чек</button>${x.status==='pending'?`<button class="btn" data-a="admPay" data-v="${x.id}:approve">Подтвердить</button><button class="btn g" data-a="admPay" data-v="${x.id}:reject">Отклонить</button>`:''}</div></section>`).join('')||'<p class="hint">Платежей пока нет.</p>'
- return admAiSec()+`<section class="cd"><h2 class="ch">Смена пароля</h2><p class="hint">Используйте надёжный пароль: не короче 6 символов, лучше длиннее.</p><div class="fl">Текущий пароль</div><input class="inp" id="ap_o" type="password"><div class="fl">Новый пароль</div><input class="inp" id="ap_n" type="password"><div class="fl">Повторите новый пароль</div><input class="inp" id="ap_2" type="password"><p id="ap_e" class="neg"></p><button class="bt rd w100" data-a="admPw">Сменить пароль</button></section><button class="bt pl w100" data-a="logout">${I2('logout')}Выйти</button>`}
+ return admAiSec()+admTgSec()+`<section class="cd"><h2 class="ch">Смена пароля</h2><p class="hint">Используйте надёжный пароль: не короче 6 символов, лучше длиннее.</p><div class="fl">Текущий пароль</div><input class="inp" id="ap_o" type="password"><div class="fl">Новый пароль</div><input class="inp" id="ap_n" type="password"><div class="fl">Повторите новый пароль</div><input class="inp" id="ap_2" type="password"><p id="ap_e" class="neg"></p><button class="bt rd w100" data-a="admPw">Сменить пароль</button></section><button class="bt pl w100" data-a="logout">${I2('logout')}Выйти</button>`}
 function admRender(){const nv=$('#nav');nv.innerHTML=[['users','Пользователи','users'],['pays','Платежи','docs'],['me','Профиль','user']].map(n=>`<button class="${n[0]===admTab?'on':''}" data-a="admTab" data-v="${n[0]}">${I2(n[2])}<span>${n[1]}</span></button>`).join('');
  const ttl={users:'Пользователи',pays:'Платежи',me:'Профиль администратора'}[admTab];$('#main').innerHTML=`<header class="hd"><div class="hr"><div class="ht">${I2('user')}</div><div class="hx"><h1>${ttl}</h1><p>Панель администратора</p></div></div></header><div class="pg">${admBody()}</div>`}
 const render0=render;render=function(){if(acc&&acc.admin)return admRender();return render0()};
@@ -1315,7 +1318,7 @@ const wqSum=i=>Object.values(wqOf(i)).reduce((s,x)=>s+(+x||0),0);
 const whQty=(i,id)=>id?(+wqOf(i)[id]||0):Math.max(0,(+i.qty||0)-wqSum(i));
 const whAll=()=>[{id:'',name:whMainName()},...whList()];
 const whName=id=>id?((whList().find(w=>w.id===id)||{}).name||'—'):whMainName();
-const whPass=i=>fwh==='*'||whQty(i,fwh)>0||(i.wh||'')===fwh;
+const whPass=i=>(fwh==='*'||whQty(i,fwh)>0||(i.wh||'')===fwh)&&lrPass(i);
 const qShow=i=>fwh==='*'?(+i.qty||0):whQty(i,fwh);
 const lowOf=i=>i.min>0?+i.min:5;
 const whDef=()=>fwh==='*'?'':fwh;
@@ -1426,9 +1429,17 @@ function parseInvoiceText(txt){
  const isN=s=>/^\d+(?:[.,]\d+)?$/.test(s),toN=s=>parseFloat(s.replace(',','.'));
  const UNIT=/^(шт|штук|упак|уп|пач|кг|г|л|м|компл|pcs|pc|kg|set)\.?$/i;
  const SKIP=/^(итого|всего|в т\.? ?ч|ндс|сумма|товарн|накладн|грузополуч|покупатель|основание|дата|подпись|отпуск|получил|принял|сдал|№|наименование|артикул|кол\b|цена|сч[её]т|invoice|total|page)/i;
- let supplier='';const items=[];
- for(const ln of lines){
-  if(SKIP.test(ln))continue;
+ let supplier='';const items=[];let ctxL='',ctxR='';
+ const lrX=t=>{let line='',row='';let s=t;
+  s=s.replace(/(^|[\s,;(\/])(?:лин(?:ия|ии|ию)?\.?|line)\s*[:№#-]?\s*(\d{1,3}[A-Za-zА-Яа-я]?)(?=$|[\s,;)\/.])/i,(m,a,v)=>{line=v;return a+' '});
+  s=s.replace(/(^|[\s,;(\/])(?:ряд|ряду|row)\s*[:№#-]?\s*(\d{1,3}[A-Za-zА-Яа-я]?)(?=$|[\s,;)\/.])/i,(m,a,v)=>{row=v;return a+' '});
+  if(!line&&!row){const a=/(^|[\s,;(\/])Л[-.]?(\d{1,3})(?=$|[\s,;)\/])/.exec(s),b=/(^|[\s,;(\/])Р[-.]?(\d{1,3})(?=$|[\s,;)\/])/.exec(s);
+   if(a&&b){line=a[2];row=b[2];s=s.replace(a[0],a[1]+' ').replace(b[0],b[1]+' ')}}
+  return{s:s.replace(/\s+/g,' ').trim(),line,row}};
+ for(const ln0 of lines){
+  const m0=lrX(ln0),ln=m0.s;
+  if(!/[A-Za-zА-Яа-я]{3,}/.test(ln)&&(m0.line||m0.row)){if(m0.line)ctxL=m0.line;if(m0.row)ctxR=m0.row;continue}
+  if(!ln||SKIP.test(ln))continue;
   if(!supplier&&/(^|\s)(ооо|ип|ао|зао|оао|поставщик|продавец|supplier|seller)(\s|$|[«"“])/i.test(ln)){supplier=ln.replace(/^(поставщик|продавец|supplier|seller)\s*[:\-]?\s*/i,'').slice(0,80);continue}
   const tk=ln.split(' ');let nums=[],j=tk.length;
   while(j>0&&nums.length<4&&isN(tk[j-1])){nums.unshift(tk[j-1]);j--}
@@ -1443,7 +1454,7 @@ function parseInvoiceText(txt){
   else if(nn.length===2){qty=nn[0];price=nn[1]}
   else{qty=nn[0];price=0;if(/[.,]\d{2}$/.test(nums[0])){qty=1;price=nn[0]}}
   if(!(qty>0))continue;
-  items.push({sku,name:name.slice(0,120),qty:Math.round(qty*1000)/1000,price:Math.round(price*100)/100})}
+  items.push({sku,name:name.slice(0,120),qty:Math.round(qty*1000)/1000,price:Math.round(price*100)/100,line:m0.line||ctxL,row:m0.row||ctxR})}
  return{supplier,items}}
 
 async function orRead(fl,prompt){
@@ -1594,12 +1605,12 @@ document.addEventListener('keydown',e=>{
 
 /* ===== ДОБАВЛЕНИЕ ТОВАРА: «Вручную» или «По фото» (с линией и рядом сразу) ===== */
 let ap=null,lastLR=null;
-const apPrompt='Это фото товара, товарной накладной, списка, ценника или этикетки (печатных или рукописных, на любом языке). Определи товары. Верни ТОЛЬКО JSON без пояснений: {"items":[{"sku":"артикул или пустая строка","name":"название товара","qty":число,"price":число}]}. qty это количество (если не указано, поставь 1), price это цена за единицу (если нет, поставь 0). Если на фото сам товар без текста, назови его коротко. Не выдумывай артикулы, нечитаемое пропусти.';
+const apPrompt='Это фото товара, товарной накладной, списка, ценника или этикетки (печатных или рукописных, на любом языке). Определи товары. Верни ТОЛЬКО JSON без пояснений: {"items":[{"sku":"артикул или пустая строка","name":"название товара","qty":число,"price":число,"line":"линия или пустая строка","row":"ряд или пустая строка"}]}. Если в документе указаны линия и ряд (например «Линия 2, ряд 5», «Л2 Р5»), впиши их в line и row у соответствующих товаров, иначе оставь пустые строки. qty это количество (если не указано, поставь 1), price это цена за единицу (если нет, поставь 0). Если на фото сам товар без текста, назови его коротко. Не выдумывай артикулы, нечитаемое пропусти.';
 const apMk=()=>(typeof sc!=='undefined'&&+sc.mk>0)?+sc.mk:30;
 
 function apRender(){
  if(!ap)return;
- if(ap.busy){modal(`<h2>Читаю фото…</h2><p class="hint">Это займёт несколько секунд.</p>`);return}
+ if(ap.busy){modal(`<h2>Читаю файл…</h2><p class="hint">${ap.msg?esc(ap.msg)+'. ':''}Это займёт несколько секунд.</p>`);return}
  const L=ap.items;
  modal(`<h2>Товары с фото</h2><p class="hint">Проверьте список. Линию и ряд можно задать сразу для всех товаров или отдельно для каждого.</p>
  <div class="g2"><div><div class="fl">Линия (для всех)</div><input class="inp" data-c="apcommon" data-v="line" value="${esc(ap.line)}" placeholder="например 2"></div><div><div class="fl">Ряд (для всех)</div><input class="inp" data-c="apcommon" data-v="row" value="${esc(ap.row)}" placeholder="например 5"></div></div>
@@ -1609,25 +1620,63 @@ function apRender(){
  <button class="btn g" style="color:#d10f1a" data-a="apDel" data-v="${n}">Убрать</button></div>`).join('')}
  <div class="row"><button class="btn" data-a="apAdd">Добавить на склад (${L.length})</button><button class="btn g" data-a="x">Отмена</button></div>`)}
 
-async function apStart(fl){
- let failed=false;ap={items:[],line:lastLR?lastLR.line:'',row:lastLR?lastLR.row:'',busy:true};apRender();
- try{
-  const eng=(typeof sc!=='undefined'&&sc.s)?sc.s:aiScanner;
-  const r=await eng.json(apPrompt,{images:fl,modelTier:'default',cache:false}),mk=apMk();
-  ap.items=(Array.isArray(r&&r.items)?r.items:[]).map(x=>{const buy=+x.price||0;return{sku:String(x.sku||'').trim(),name:String(x.name||'').trim(),qty:+x.qty>0?+x.qty:1,buy,sell:buy?+(buy*(1+mk/100)).toFixed(2):0,line:'',row:''}}).filter(x=>x.name||x.sku);
- }catch(e){failed=true;toast((e&&e.msg)||'Не удалось распознать фото. Попробуйте ещё раз или добавьте вручную')}
+const apIsPdf=f=>f&&(/pdf/i.test(f.type||'')||/\.pdf$/i.test(f.name||''));
+const apMap=(arr,mk)=>(Array.isArray(arr)?arr:[]).map(x=>{const buy=+x.price||0;return{sku:String(x.sku||'').trim(),name:String(x.name||'').trim(),qty:+x.qty>0?+x.qty:1,buy,sell:buy?+(buy*(1+mk/100)).toFixed(2):0,line:String(x.line==null?'':x.line).trim(),row:String(x.row==null?'':x.row).trim()}}).filter(x=>x.name||x.sku);
+
+/* чтение PDF: pdf.js (в программе для Windows лежит внутри, в HTML подгружается из интернета) */
+let pdfjsP=null;
+async function loadPdfJs(){
+ if(window.pdfjsLib&&window.__pdfW)return window.pdfjsLib;
+ if(pdfjsP)return pdfjsP;
+ pdfjsP=(async()=>{
+  const B=window.__PDFJS_BASE,ver='3.11.174',cdn='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/'+ver+'/',main=(B||cdn)+'pdf.min.js',wk=(B||cdn)+'pdf.worker.min.js';
+  if(!window.pdfjsLib)await new Promise((ok,no)=>{const s=document.createElement('script');s.src=main;s.onload=ok;s.onerror=()=>no({msg:B?'Не найден модуль чтения PDF в программе':'Для чтения PDF нужен интернет (загрузка модуля). Можно сфотографировать документ'});document.head.appendChild(s)});
+  if(!window.pdfjsLib)throw{msg:'Не удалось загрузить модуль чтения PDF'};
+  let src=wk;try{const t=await(await fetch(wk)).text();src=URL.createObjectURL(new Blob([t],{type:'text/javascript'}))}catch(e){}
+  pdfjsLib.GlobalWorkerOptions.workerSrc=src;window.__pdfW=1;return pdfjsLib})();
+ try{return await pdfjsP}catch(e){pdfjsP=null;throw e}}
+async function pdfLines(doc){const out=[],n=Math.min(doc.numPages,30);
+ for(let p=1;p<=n;p++){const pg=await doc.getPage(p),tc=await pg.getTextContent(),rows=[];
+  tc.items.filter(x=>x.str&&x.str.trim()).map(x=>({s:x.str,x:x.transform[4],y:x.transform[5],w:x.width||0})).sort((a,b)=>b.y-a.y||a.x-b.x).forEach(t=>{const r=rows.find(r=>Math.abs(r.y-t.y)<=3);if(r)r.t.push(t);else rows.push({y:t.y,t:[t]})});
+  rows.sort((a,b)=>b.y-a.y).forEach(r=>{r.t.sort((a,b)=>a.x-b.x);let s='',px=null;r.t.forEach(t=>{if(px!==null&&t.x-px>1)s+=' ';s+=t.s;px=t.x+t.w});s=s.replace(/\s+/g,' ').trim();if(s)out.push(s)})}
+ return out}
+async function pdfPage(doc,p){const pg=await doc.getPage(p),v0=pg.getViewport({scale:1}),k=Math.min(2.5,2200/Math.max(v0.width,v0.height)),vp=pg.getViewport({scale:k}),c=document.createElement('canvas');c.width=Math.round(vp.width);c.height=Math.round(vp.height);
+ const cx=c.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:cx,viewport:vp}).promise;
+ return new Promise(r=>c.toBlob(r,'image/jpeg',.9))}
+async function apPdf(fl,eng,mk){
+ const pj=await loadPdfJs(),doc=await pj.getDocument({data:await fl.arrayBuffer()}).promise;
+ try{if(typeof orCfg!=='undefined'&&!orCfg)await orGet()}catch(e){}
+ const hasAi=typeof orCfg!=='undefined'&&!!orCfg;
+ let txt=[];try{txt=await pdfLines(doc)}catch(e){}
+ const tx=txt.join('\n'),parsed=tx.replace(/\s/g,'').length>=20?parseInvoiceText(tx).items:[];
+ if(parsed.length&&!hasAi)return apMap(parsed,mk);
+ const n=Math.min(doc.numPages,hasAi?10:6),out=[];let lastE=null;
+ for(let p=1;p<=n;p++){ap.msg='Страница '+p+' из '+n;apRender();
+  try{const r=await eng.json(apPrompt,{images:await pdfPage(doc,p),modelTier:'default',cache:false});out.push(...apMap(r&&r.items,mk))}catch(e){lastE=e}}
+ if(doc.numPages>n)toast('Прочитаны первые '+n+' стр. из '+doc.numPages);
+ if(!out.length&&parsed.length)return apMap(parsed,mk);
+ if(!out.length&&lastE)throw lastE;
+ return out}
+
+async function apStart(fls){
+ fls=Array.isArray(fls)?fls:[fls];let failed=false,err='';ap={items:[],line:lastLR?lastLR.line:'',row:lastLR?lastLR.row:'',busy:true,msg:''};apRender();
+ const eng=(typeof sc!=='undefined'&&sc.s)?sc.s:aiScanner,mk=apMk();
+ for(let k=0;k<fls.length;k++){const fl=fls[k];ap.msg=fls.length>1?'Файл '+(k+1)+' из '+fls.length:'';apRender();
+  try{const arr=apIsPdf(fl)?await apPdf(fl,eng,mk):apMap(((await eng.json(apPrompt,{images:fl,modelTier:'default',cache:false}))||{}).items,mk);ap.items.push(...arr)}
+  catch(e){failed=true;err=(e&&e.msg)||err}}
  ap.busy=false;
- if(!ap.items.length){A.x();if(!failed)toast('Товары на фото не найдены. Попробуйте более чёткое фото или добавьте вручную');ap=null;return}
+ if(!ap.items.length){A.x();toast(failed?(err||'Не удалось прочитать файл. Попробуйте ещё раз или добавьте вручную'):'Товары в документе не найдены. Попробуйте более чёткий файл или добавьте вручную');ap=null;return}
+ if(failed)toast('Часть файлов прочитать не удалось');
  apRender()}
 
-document.addEventListener('change',e=>{if(!e.target||e.target.id!=='apf')return;const fl=e.target.files&&e.target.files[0];e.target.value='';if(fl)apStart(fl)});
+document.addEventListener('change',e=>{if(!e.target||e.target.id!=='apf')return;const fl=[...(e.target.files||[])];e.target.value='';if(fl.length)apStart(fl)});
 
 const apSync=()=>document.querySelectorAll('#m [data-c="apf"],#m [data-c="apcommon"]').forEach(el=>C[el.dataset.c](el.dataset.v,el.value));
 Object.assign(C,{
  apf(v,x){const[n,k]=String(v).split(':'),r=ap&&ap.items[+n];if(!r)return;r[k]=['qty','buy','sell'].includes(k)?(+x||0):x},
  apcommon(v,x){if(ap)ap[v]=x}});
 Object.assign(A,{
- addChoice(){modal(`<h2>Добавить товар</h2><div class="row" style="flex-direction:column;gap:10px"><button class="btn big2" data-a="addManual">✍️ Вручную</button><label class="btn big2" style="margin:0;cursor:pointer;text-align:center">📷 По фото<input id="apf" type="file" accept="image/*" hidden></label></div><p class="hint">По фото можно добавить товары с накладной, списка, ценника или этикетки. Линию и ряд зададите перед добавлением.</p><div class="row"><button class="btn g" data-a="x">Отмена</button></div>`)},
+ addChoice(){modal(`<h2>Добавить товар</h2><div class="row" style="flex-direction:column;gap:10px"><button class="btn big2" data-a="addManual">✍️ Вручную</button><label class="btn big2" style="margin:0;cursor:pointer;text-align:center">📷 По фото или PDF<input id="apf" type="file" accept="image/*,application/pdf,.pdf" multiple hidden></label></div><p class="hint">Можно выбрать фото или PDF-документы (накладная, список, ценник, этикетка), сразу несколько файлов. Программа прочитает артикул и количество, а линию и ряд тоже, если они есть в документе. Всё можно поправить перед добавлением.</p><div class="row"><button class="btn g" data-a="x">Отмена</button></div>`)},
  addManual(){A.x();A.itemForm()},
  apDel(v){if(!ap)return;apSync();ap.items.splice(+v,1);if(!ap.items.length){A.x();ap=null;return}apRender()},
  apAdd(){if(!ap)return;apSync();let added=0,merged=0;const wh=whDef();
@@ -1642,6 +1691,145 @@ Object.assign(A,{
 /* линия и ряд запоминаются: следующий новый товар сразу получает те же */
 {const f0=A.itemForm;A.itemForm=function(v){const r=f0.apply(this,arguments);if(!v&&lastLR){const l=$('#f_line'),w=$('#f_row');if(l&&!l.value)l.value=lastLR.line;if(w&&!w.value)w.value=lastLR.row}return r}}
 {const s0=A.saveItem;A.saveItem=function(v){const l=$('#f_line'),w=$('#f_row'),ln=l?l.value.trim():'',rw=w?w.value.trim():'';const n0=db.items.length,r=s0.apply(this,arguments);if(!v&&db.items.length>n0&&(ln||rw))lastLR={line:ln,row:rw};return r}}
+
+/* ===== НОВОЕ: несколько товаров в продаже, заказ по закончившимся (PDF), фильтр и порядок по линии/ряду =====
+   Вставляется в основной скрипт приложения прямо перед boot(). */
+
+/* ---------- стили ---------- */
+{const st=document.createElement('style');st.textContent='.msr{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--ln,#e3e8e6)}.msr:last-child{border-bottom:0}.msq{display:flex;align-items:center;gap:4px;flex:0 0 auto}.msq .btn{padding:6px 12px;min-width:38px;margin:0}.msi{width:64px;text-align:center;border:1px solid var(--ln,#cfd8d5);border-radius:10px;padding:8px 4px;background:var(--pan,#fff);color:inherit;font:inherit}.msl{max-height:46vh;overflow:auto;margin:8px 0}.lrb .fl{margin-top:6px}';document.head.appendChild(st)}
+
+/* ---------- ФИЛЬТР И ПОРЯДОК ПО ЛИНИИ И РЯДУ ---------- */
+const nfNat=(a,b)=>String(a==null?'':a).localeCompare(String(b==null?'':b),'ru',{numeric:true,sensitivity:'base'});
+let fLine='',fRow='',fSort=''; // '~' = «без линии / без ряда»; fSort: '' | lr | sku | name
+const nfIs=(v,f)=>f==='~'?!String(v||'').trim():nrm(v)===nrm(f);
+const lrPass=i=>(!fLine||nfIs(i.line,fLine))&&(!fRow||nfIs(i.row,fRow));
+const lrSort=(a,b)=>{
+ if(fSort==='lr'){const ea=!String(a.line||'').trim()&&!String(a.row||'').trim(),eb=!String(b.line||'').trim()&&!String(b.row||'').trim();if(ea!==eb)return ea?1:-1;return nfNat(a.line,b.line)||nfNat(a.row,b.row)||nfNat(a.sku,b.sku)}
+ if(fSort==='sku')return nfNat(a.sku,b.sku);
+ if(fSort==='name')return nfNat(a.name,b.name);
+ return 0};
+const lrVals=k=>{const m=new Map();db.items.forEach(i=>{if(k==='row'&&fLine&&!nfIs(i.line,fLine))return;const v=String(i[k]||'').trim();if(v&&!m.has(nrm(v)))m.set(nrm(v),v)});return[...m.values()].sort(nfNat)};
+const lrSel=(k,cur,all)=>`<select class="inp" data-c="${k==='line'?'fLine':'fRow'}"><option value="">${all}</option>${lrVals(k).map(v=>`<option value="${esc(v)}"${cur&&cur!=='~'&&nrm(v)===nrm(cur)?' selected':''}>${esc(v)}</option>`).join('')}<option value="~"${cur==='~'?' selected':''}>Без ${k==='line'?'линии':'ряда'}</option></select>`;
+const lrBar=()=>`<section class="cd lrb"><div class="g2"><div><div class="fl">Линия</div>${lrSel('line',fLine,'Все линии')}</div><div><div class="fl">Ряд</div>${lrSel('row',fRow,'Все ряды')}</div></div><div class="fl">Порядок</div><select class="inp" data-c="fSort">${[['','Как добавлено'],['lr','По порядку: линия → ряд'],['sku','По артикулу'],['name','По названию']].map(o=>`<option value="${o[0]}"${fSort===o[0]?' selected':''}>${o[1]}</option>`).join('')}</select>${(fLine||fRow||fSort)?'<div class="row"><button class="btn g" data-a="lrReset">Сбросить</button></div>':''}</section>`;
+Object.assign(C,{
+ fLine(v,x){fLine=x;if(fRow&&fRow!=='~'&&!lrVals('row').some(r=>nrm(r)===nrm(fRow)))fRow='';render()},
+ fRow(v,x){fRow=x;render()},
+ fSort(v,x){fSort=x;render()}});
+Object.assign(A,{lrReset(){fLine='';fRow='';fSort='';render()}});
+{const _vi=V.items;V.items=()=>{const h=_vi();if(isub!=='list')return h;const p=seg(isub).length+whBar(true).length;return h.slice(0,p)+lrBar()+h.slice(p)}}
+{const _vs=V.stock;V.stock=()=>{const h=_vs(),w=whBar(false);return h.startsWith(w)?w+lrBar()+h.slice(w.length):lrBar()+h}}
+
+/* ---------- ПРОДАЖА: выбрать сразу несколько товаров и задать количество каждого ---------- */
+let nfMs=null;
+const msMax=i=>{const l=cart.find(c=>c.id==i.id);return Math.max(0,whAv(i)-(l?l.qty:0))};
+const msList=()=>{const k=nrm(nfMs.q);return db.items.filter(i=>!k||nrm(i.name+' '+i.sku+' '+(i.bc||'')).includes(k)).sort(lrSort).slice(0,250)};
+const msRows=()=>{const L=msList();return L.length?L.map(i=>{const mx=msMax(i),n=nfMs.n[i.id]||0;
+ return `<div class="msr"><div class="whg"><b>${esc(i.name)}</b><small class="mu">${esc(i.sku)}${i.line||i.row?' · '+esc(placeTxt(i)):''} · ${mr(i.sell)} · ${mx>0?'есть '+mx:'нет в наличии'}</small></div>${mx>0?`<div class="msq"><button class="btn g" data-a="msDec" data-v="${i.id}" aria-label="Меньше">−</button><input class="msi" type="number" min="0" max="${mx}" step="1" inputmode="numeric" data-ms="${i.id}" value="${n||''}" placeholder="0"><button class="btn g" data-a="msInc" data-v="${i.id}" aria-label="Больше">+</button></div>`:''}</div>`}).join(''):'<p class="hint">Ничего не найдено.</p>'};
+const msSel=()=>Object.keys(nfMs.n).filter(id=>nfMs.n[id]>0&&I(+id));
+const msUpd=()=>{if(!nfMs)return;const a=msSel(),e=$('#ms_cnt'),b=$('#ms_add');if(e)e.textContent=a.length+' поз., '+a.reduce((s,id)=>s+nfMs.n[id],0)+' шт.';if(b)b.disabled=!a.length};
+const msSet=(id,n,typing)=>{const i=I(+id);if(!i)return;const mx=msMax(i);n=Math.max(0,Math.floor(+n||0));let clamp=false;if(n>mx){n=mx;clamp=true;toast('Больше '+mx+' нет на складе')}
+ nfMs.n[id]=n;const el=document.querySelector('#m [data-ms="'+id+'"]');if(el&&(!typing||clamp))el.value=n||'';msUpd()};
+document.addEventListener('input',e=>{const t=e.target;if(!t||!nfMs)return;
+ if(t.id==='ms_q'){nfMs.q=t.value;const l=$('#ms_l');if(l)l.innerHTML=msRows();return}
+ if(t.dataset&&t.dataset.ms!==undefined)msSet(t.dataset.ms,t.value,true)});
+Object.assign(A,{
+ msOpen(){if(!db.items.length)return toast('Сначала добавьте товары в разделе «Склад»');nfMs={q:'',n:{}};
+  modal(`<h2>Выбрать товары</h2><p class="hint">Задайте количество рядом с каждым нужным товаром («+» или впишите число), затем добавьте всё в чек одним нажатием.</p><input class="inp" id="ms_q" placeholder="Поиск по названию или артикулу" autocomplete="off"><div class="msl" id="ms_l">${msRows()}</div><div class="row"><button class="btn" id="ms_add" data-a="msAdd" disabled>Добавить в чек (<span id="ms_cnt">0 поз., 0 шт.</span>)</button><button class="btn g" data-a="x">Отмена</button></div>`)},
+ msInc(v){if(nfMs)msSet(v,(nfMs.n[v]||0)+1)},
+ msDec(v){if(nfMs)msSet(v,(nfMs.n[v]||0)-1)},
+ msAdd(){if(!nfMs)return;const ids=msSel();if(!ids.length)return toast('Укажите количество хотя бы у одного товара');let pos=0,pcs=0;
+  ids.forEach(id=>{const i=I(+id),take=Math.min(nfMs.n[id],msMax(i));if(take<=0)return;const l=cart.find(c=>c.id==i.id);
+   if(l){if((l.m||1)>1){l.u='шт';l.m=1;l.qty+=take;l.n=l.qty}else{l.n=(l.n||l.qty)+take;l.qty+=take}}
+   else cart.push({id:i.id,qty:take,price:i.sell,u:'шт',m:1,n:take});pos++;pcs+=take});
+  nfMs=null;paid=null;A.x();render();toast('В чек добавлено: '+pos+' поз., '+pcs+' шт.')}});
+
+/* ---------- ЗАКАЗ ТОВАРА (PDF): что заканчивается или закончилось ---------- */
+let nfOrd=null;
+const ordCand=(all,q)=>{const m=new Map();
+ db.items.forEach(i=>{const k=nrm(i.sku)||('i'+i.id);if(!m.has(k))m.set(k,[]);m.get(k).push(i)});
+ const k2=nrm(q||''),out=[];
+ m.forEach((g,key)=>{const total=g.reduce((s,x)=>s+(+x.qty||0),0),mn=Math.max(0,...g.map(x=>+x.min||0)),thr=mn>0?mn:5,low=total<=thr;
+  if(!all&&!low)return;
+  const sku=g[0].sku||'',nm=(g.find(x=>x.name&&nrm(x.name)!==nrm(x.sku))||g[0]).name||sku;
+  if(k2&&!nrm(sku+' '+nm).includes(k2))return;
+  const pl=[...new Set(g.map(x=>placeTxt(x)).filter(x=>x!=='без места'))].join('; ');
+  out.push({key,sku,name:nm,total,thr,low,place:pl,sug:Math.max(1,Math.ceil(thr*2-total))})});
+ return out.sort((a,b)=>(b.low-a.low)||(a.total-b.total)||nfNat(a.sku,b.sku))};
+const ordQty=c=>nfOrd.n[c.key]!==undefined?nfOrd.n[c.key]:(c.low?c.sug:0);
+const ordRows=()=>{const L=ordCand(nfOrd.all,nfOrd.q);return L.length?L.map(c=>`<div class="msr"><div class="whg"><b>${esc(c.sku)}</b>${c.name&&nrm(c.name)!==nrm(c.sku)?' '+esc(c.name):''}<small class="${c.total<=0?'neg':'mu'}">${c.total<=0?'нет в наличии':'осталось '+c.total}${c.place?' · '+esc(c.place):''}</small></div><div class="msq"><input class="msi" type="number" min="0" step="1" inputmode="numeric" data-ord="${esc(c.key)}" value="${ordQty(c)||''}" placeholder="0"></div></div>`).join(''):'<p class="hint">Таких товаров нет. Нажмите «Показать все товары», чтобы выбрать любой.</p>'};
+const ordCnt=()=>{const L=ordCand(true,'').filter(c=>ordQty(c)>0);return{n:L.length,q:L.reduce((s,c)=>s+ordQty(c),0)}};
+const ordUpd=()=>{const e=$('#ord_cnt');if(e){const c=ordCnt();e.textContent=c.n+' поз., '+c.q+' шт.'}};
+const ordShopDef=()=>{const s=db.shopInfo||{},a=(typeof acc!=='undefined'&&acc)||{};return{name:s.name||a.shopName||a.name||'',phone:s.phone||(a.phone?'+'+String(a.phone).replace(/\D/g,''):'')}};
+const ordSync=()=>{if(!nfOrd)return;const a=$('#ord_sn'),b=$('#ord_sp');if(a)nfOrd.sn=a.value;if(b)nfOrd.sp=b.value};
+const ordRender=()=>modal(`<h2>Заказ товара</h2><p class="hint">Показаны товары, которые заканчиваются или закончились. Количество подставлено заранее: измените его или оставьте пустым, чтобы не заказывать позицию.</p><div class="g2"><div><div class="fl">Название магазина</div><input class="inp" id="ord_sn" value="${esc(nfOrd.sn)}"></div><div><div class="fl">Контактный номер</div><input class="inp" id="ord_sp" value="${esc(nfOrd.sp)}" inputmode="tel"></div></div><input class="inp" id="ord_q" style="margin-top:8px" placeholder="Поиск по артикулу или названию" value="${esc(nfOrd.q)}" autocomplete="off"><div class="msl" id="ord_l">${ordRows()}</div><div class="row"><button class="btn g" data-a="ordAll">${nfOrd.all?'Только заканчивающиеся':'Показать все товары'}</button><button class="btn g" data-a="ordClr">Обнулить всё</button></div><div class="row"><button class="btn" data-a="ordMake">Оформить заказ (<span id="ord_cnt"></span>)</button><button class="btn g" data-a="ordHist">История</button><button class="btn g" data-a="x">Закрыть</button></div>`);
+document.addEventListener('input',e=>{const t=e.target;if(!t||!nfOrd||!$('#ord_l'))return;
+ if(t.id==='ord_q'){nfOrd.q=t.value;$('#ord_l').innerHTML=ordRows();return}
+ if(t.dataset&&t.dataset.ord!==undefined){nfOrd.n[t.dataset.ord]=Math.max(0,Math.floor(+t.value||0));ordUpd()}});
+async function ordPdf(o){
+ if(!window.pdfMake)return toast('Библиотека PDF ещё загружается (нужен интернет), повторите через секунду');
+ const hd=(t,r)=>({text:t,bold:true,color:'#fff',fillColor:'#c4161c',alignment:r?'right':'left'}),sum=o.lines.reduce((s,l)=>s+l.qty,0);
+ const def={pageSize:'A4',pageMargins:[40,40,40,40],defaultStyle:{fontSize:12},content:[
+  {text:o.shop&&o.shop.name||'Магазин',fontSize:20,bold:true},
+  {text:o.shop&&o.shop.phone?'Контакт: '+o.shop.phone:'',margin:[0,3,0,0],color:'#333'},
+  {text:'Заказ № '+o.no,fontSize:17,bold:true,margin:[0,16,0,2]},
+  {text:o.date,color:'#64748b',margin:[0,0,0,12]},
+  {table:{headerRows:1,widths:[28,'*',90],body:[[hd('№'),hd('Артикул'),hd('Количество',1)],...o.lines.map((l,n)=>[{text:String(n+1)},{text:String(l.sku)},{text:String(l.qty),alignment:'right',bold:true}])]},layout:'lightHorizontalLines'},
+  {text:'Позиций: '+o.lines.length+', всего: '+sum+' шт.',alignment:'right',bold:true,margin:[0,12,0,0]}]};
+ let blob;try{blob=await new Promise(res=>pdfMake.createPdf(def).getBlob(res))}catch(e){return toast('Не удалось создать PDF')}
+ saveB(blob,'Заказ-'+o.no+'.pdf')}
+Object.assign(A,{
+ ordOpen(){const d=ordShopDef();nfOrd={q:'',all:false,n:{},sn:d.name,sp:d.phone};ordRender();ordUpd()},
+ ordAll(){ordSync();nfOrd.all=!nfOrd.all;ordRender();ordUpd()},
+ ordClr(){ordSync();ordCand(true,'').forEach(c=>{nfOrd.n[c.key]=0});ordRender();ordUpd()},
+ async ordMake(){if(!nfOrd)return;ordSync();const L=ordCand(true,'').filter(c=>ordQty(c)>0).map(c=>({sku:c.sku,name:c.name,qty:ordQty(c)}));
+  if(!L.length)return toast('Укажите количество хотя бы у одного товара');
+  const shop={name:(nfOrd.sn||'').trim(),phone:(nfOrd.sp||'').trim()};
+  if(!window.pdfMake)return toast('Библиотека PDF ещё загружается (нужен интернет), повторите через секунду');
+  const ol=dbL('orders'),no=Math.max(0,...ol.map(x=>+x.no||0))+1,o={id:newId(),no,date:now(),shop,lines:L};
+  ol.push(o);db.shopInfo=shop;save();nfOrd=null;A.x();toast('Заказ № '+no+' оформлен');await ordPdf(o)},
+ ordHist(){ordSync();const H=dbL('orders').slice().reverse().slice(0,40);
+  modal(`<h2>История заказов</h2>${H.length?H.map(o=>`<div class="whr"><div class="whg"><b>Заказ № ${o.no}</b><small class="mu">${esc(o.date)} · ${o.lines.length} поз., ${o.lines.reduce((s,l)=>s+l.qty,0)} шт.</small></div><button class="btn g" data-a="ordPdf" data-v="${o.id}">PDF</button></div>`).join(''):'<p class="hint">Заказов пока нет.</p>'}<div class="row"><button class="btn g" data-a="ordOpen">Назад</button><button class="btn g" data-a="x">Закрыть</button></div>`)},
+ ordPdf(v){const o=dbL('orders').find(x=>String(x.id)===String(v));if(o)ordPdf(o)}});
+
+/* ---------- Касса: кнопки «Выбрать несколько» и «Заказ» ---------- */
+{const _vp=V.pos;V.pos=()=>{let h=_vp();const low=h.includes('data-a="lowBuy"');
+ if(low)h=h.replace('data-a="lowBuy">В закупку</button>','data-a="lowBuy">В закупку</button><button class="btn g" style="margin-left:8px" data-a="ordOpen">Заказ</button>');
+ const b=low?`<button class="bt rd big2" style="margin:0 0 10px;width:100%" data-a="msOpen">${I2('cart')}Выбрать несколько товаров</button>`
+  :`<div class="g2 sp" style="margin:0 0 10px"><button class="bt rd big2" data-a="msOpen">${I2('cart')}Выбрать несколько</button><button class="bt pl big2" data-a="ordOpen">Заказ товара</button></div>`;
+ const k=h.indexOf('Новая продажа'),s=k>=0?h.lastIndexOf('<section',k):-1;
+ return s>=0?h.slice(0,s)+b+h.slice(s):b+h}}
+
+/* ===== ЧЕКИ В TELEGRAM =====
+   Администратор вписывает токен бота и ID чата в «Профиль → Чеки в Telegram».
+   После каждой продажи в этот чат уходит текстовое сообщение с чеком.
+   Токен виден и редактируется только администратором; сотрудники его не видят. */
+let tgCfg=null;
+async function tgGet(){try{const r=await API('/tg');tgCfg=r&&r.tg&&r.tg.token&&r.tg.chatId?r.tg:null}catch(e){}return tgCfg}
+
+const tgEsc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function tgReceiptText(d){
+ const shop=(typeof acc!=='undefined'&&acc&&acc.shopName)||(typeof acc!=='undefined'&&acc&&acc.name)||'Магазин';
+ const lines=(d.lines||[]).map(l=>'• '+tgEsc(l.name)+' — '+l.qty+' × '+f(l.price)+' = '+f(l.qty*l.price)).join('\n');
+ let t='<b>'+tgEsc(shop)+'</b>\n'+tgEsc(TY[d.type]||'Чек')+' '+tgEsc(d.no)+'\n'+tgEsc(d.date)+(d.whn?'\nСклад: '+tgEsc(d.whn):'')+(d.party&&d.party!=='Розница'?'\nКлиент: '+tgEsc(d.party):'')+'\n\n'+lines+'\n\n<b>Итого: '+f(d.total)+'</b>';
+ if(d.type==='sale'){t+='\nОплачено: '+f(d.paid);if(d.debt>0)t+='\nВ долг: '+f(d.debt)}
+ return t}
+async function tgSendReceipt(d){
+ if(!d||!d.lines||!d.lines.length)return;
+ if(!tgCfg)await tgGet();
+ if(!tgCfg||!tgCfg.token||!tgCfg.chatId)return;
+ try{await fetch('https://api.telegram.org/bot'+tgCfg.token+'/sendMessage',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({chat_id:tgCfg.chatId,text:tgReceiptText(d),parse_mode:'HTML'})})}catch(e){/* нет интернета или бот недоступен — чек всё равно сохранён в приложении */}}
+{const s0=A.sell;A.sell=function(){const nd=db.docs.length;const r=s0.apply(this,arguments);if(db.docs.length>nd)tgSendReceipt(db.docs[db.docs.length-1]);return r}}
+
+/* ---------- панель администратора ---------- */
+let admTg=null;
+const admTgSec=()=>`<section class="cd"><h2 class="ch">Чеки в Telegram</h2><p class="hint">Каждая продажа отправляется сообщением в указанный Telegram-чат. Токен и ID видите и меняете только вы; сообщите сотрудникам, что чеки дублируются в Telegram.</p><div class="kv"><span>Статус</span><b>${admTg&&admTg.hasToken?'Подключено: '+esc(admTg.mask)+(admTg.chatId?' → '+esc(admTg.chatId):''):'Не подключено'}</b></div><div class="fl">Токен бота</div><input class="inp" id="tg_t" type="password" placeholder="123456789:AA…" autocomplete="off"><div class="fl">ID чата или канала</div><input class="inp" id="tg_c" placeholder="например -1001234567890 или 123456789" value="${esc((admTg&&admTg.chatId)||'')}"><p class="hint">Токен выдаёт @BotFather. ID чата — напишите боту что угодно и откройте https://api.telegram.org/bot&lt;ТОКЕН&gt;/getUpdates, там будет chat.id.</p><div class="row"><button class="btn" data-a="admTgSave">Сохранить</button>${admTg&&admTg.hasToken?'<button class="btn g" data-a="admTgDel">Отключить</button>':''}</div></section>`;
+Object.assign(A,{
+ async admTgSave(){const t=(($('#tg_t')||{}).value||'').trim(),c=(($('#tg_c')||{}).value||'').trim();
+  if(t&&!/^\d{6,12}:[\w-]{30,45}$/.test(t))return toast('Токен должен быть вида 123456789:AA…');
+  if(!c)return toast('Укажите ID чата');
+  try{await API('/a/tgset',{token:t,chatId:c});admTg=(await API('/a/tgget')).tg||{};admRender();toast('Сохранено')}catch(e){toast(errMsg(e))}},
+ async admTgDel(){if(A._td!==1){A._td=1;return toast('Нажмите «Отключить» ещё раз')}A._td=0;
+  try{await API('/a/tgset',{del:1});admTg=(await API('/a/tgget')).tg||{};admRender();toast('Отключено')}catch(e){toast(errMsg(e))}}});
 
 /* ===== ДЕСКТОП: офлайн-режим =====
    Вставляется в основной скрипт приложения прямо перед boot().
